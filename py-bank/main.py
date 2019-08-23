@@ -1,46 +1,44 @@
-import pandas as pd
-
-df = pd.read_csv("budget_data.csv")
-
-Total = df.Date.value_counts()
-Total_Months = Total.sum()
-
-Net_Profit_Loss = df['Profit/Losses'].sum()
-
-first = df['Profit/Losses'].iloc[0]
-
-last = df['Profit/Losses'].iloc[85]
-
-Average_Change = (last-first)/Total_Months
-
-    prev_value = 0
-    largest_delta = 0
-
-    for i in df['Profit/Losses']:
-            delta = i - prev_value
-            if delta > largest_delta:
-                    largest_delta = delta
-            prev_value = i
-
-    print(largest_delta)
-
-prev_value = 0
-smallest_delta = 0
-
-for i in df['Profit/Losses']:
-        delta = i - prev_value
-        if delta < smallest_delta:
-                smallest_delta = delta
-        prev_value = i
-
-print(smallest_delta)
-
-print('Financial Analysis')
-print('------------------')
-print("Total Months:", (Total_Months))
-print('Total: $', (Net_Profit_Loss))
-print('Average Change:' '$',(Average_Change))
-print('Greatest Increase in Profits: Feb-2012 $',(largest_delta))
-print('Greatest Decrease in Profits: Sep-2013 $',(smallest_delta))
+import os
+import csv
 
 
+month_count = 0
+this_month_total = 0
+last_month_total = 0
+total_amount = 0
+revenue_change = 0
+revenue_changes = []
+months = []
+
+filepath = os.path.join('budget_data.csv')
+with open(filepath, 'r', newline="") as csvfile:
+    budget_reader = csv.reader(csvfile, delimiter = ",")
+    
+    next(budget_reader)
+    
+    for row in budget_reader:
+        month_count = month_count + 1
+        months.append(row[0])
+        this_month_total = int(row[1])
+        total_amount = total_amount + this_month_total
+        if month_count > 1:
+            revenue_change = this_month_total - last_month_total
+            revenue_changes.append(revenue_change)
+        last_month_total = this_month_total
+        
+sum_revenue_changes = sum(revenue_changes)
+average_change = sum_revenue_changes/(month_count - 1)
+max_change = max(revenue_changes)
+min_change = min(revenue_changes)
+max_month_index = revenue_changes.index(max_change)
+min_month_index = revenue_changes.index(min_change)
+max_month = months[max_month_index]
+min_month = months[min_month_index]
+
+print("Financial Analysis")
+print("----------------------------------------")
+print(f"Total Months: {month_count}")
+print(f"Total Revenue: ${total_revenue}")
+print(f"Average Revenue Change: ${average_change}")
+print(f"Greatest Increase in Revenue: {max_month} (${max_change})")
+print(f"Greatest Decrease in Revenue: {min_month} (${min_change})")
