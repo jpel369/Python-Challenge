@@ -1,30 +1,40 @@
-import pandas as pd
+import os
+import csv
 
-df = pd.read_csv('election_data.csv')
+total_votes = 0
+candidate = ""
+candidate_votes = {}
+candidate_percentages ={}
+winner_votes = 0
+winner = ""
 
-Total = df['Voter ID'].value_counts()
-Total_Votes = Total.sum()
+filepath = os.path.join("election_data.csv")
+with open(filepath,'r', newline="") as csvelection:
+    election_reader = csv.reader(csvelection, delimiter=",")
+    next(election_reader)
+    for row in election_reader:
+        total_votes = total_votes + 1
+        candidate = row[2]
+        if candidate in candidate_votes:
+            candidate_votes[candidate] = candidate_votes[candidate] + 1
+        else:
+            candidate_votes[candidate] = 1
 
-Candidates = df.Candidate.unique()
+for person, vote_count in candidate_votes.items():
+    candidate_percentages[person] = '{0:.0%}'.format(vote_count / total_votes)
+    if vote_count > winner_votes:
+        winner_votes = vote_count
+        winner = person
 
-Khan_Count = df.loc[df.Candidate == 'Khan', 'Candidate'].count()
-
-c = df.groupby(['Candidate']).size()
-c = pd.Series.to_frame(c, name = "Count")
-
-s = df['Candidate'].value_counts(normalize=True)*100
-s = pd.Series.to_frame(s, name = "Percentage")
-s["Candidate"] = s.index
-
-t = pd.merge(c,s, on="Candidate")
-
-winner = t.loc[t["Percentage"].idxmax()]
+dashbreak = "-------------------------"
 
 print("Election Results")
-print('------------------')
-print("Total Votes:" ,(Total_Votes))
-print('------------------')
-print(t)
-print('------------------')
-print(winner)
-print('------------------')
+print(dashbreak)
+print(f"Total Votes: {total_votes}")
+print(dashbreak)
+for person, vote_count in candidate_votes.items():
+    print(f"{person}: {candidate_percentages[person]} ({vote_count})")
+print(dashbreak)
+print(f"Winner: {winner}")
+print(dashbreak)
+
